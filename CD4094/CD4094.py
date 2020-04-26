@@ -4,10 +4,10 @@
 
 import RPi.GPIO as GPIO
 
-# pins is a list of lists
-# pins[0] are basic output pins
-# pins[1] are basic input pins
-# pins[2] are hardware PWM values: [ pin, freq, brightness ]
+# This module must be initialized prior to use!
+# Example: `CD4094.init( [STROBE, DATA, CLOCK, ENABLE], CHANNELS )`
+
+# global variable for storing pin numbers
 
 STROBE=-1
 DATA=-1
@@ -52,16 +52,16 @@ def update(values):
 
 def init(pins, channels):
 
-	GPIO.setwarnings(False)
-	GPIO.setmode(GPIO.BCM) # use GPIO pin numbers
-
-	# Setup Rregister outputs
-
 	global STROBE
 	global DATA
 	global CLOCK
 	global ENABLE
 	global CHANNELS
+
+	GPIO.setwarnings(False)
+	GPIO.setmode(GPIO.BCM) # use GPIO pin numbers
+
+	# Setup Rregister outputs
 
 	STROBE=pins[0]
 	DATA=pins[1]
