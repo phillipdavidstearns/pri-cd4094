@@ -9,6 +9,12 @@ import RPi.GPIO as GPIO
 # pins[1] are basic input pins
 # pins[2] are hardware PWM values: [ pin, freq, brightness ]
 
+STROBE=-1
+DATA=-1
+CLOCK=-1
+ENABLE=-1
+CHANNELS=-1
+
 def enable():
 	GPIO.output(ENABLE, 1)
 
