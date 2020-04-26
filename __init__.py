@@ -1,5 +1,3 @@
-import RPi.GPIO as GPIO
-
 from CD4094 import enable
 from CD4094 import disable
 from CD4094 import clear

@@ -2,6 +2,8 @@
 # created to make abstract shiftregister sequential control logic
 # also abstracts the hardware based PWM functionality of pigpio
 
+import RPi.GPIO as GPIO
+
 # pins is a list of lists
 # pins[0] are basic output pins
 # pins[1] are basic input pins
