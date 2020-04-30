@@ -14,7 +14,7 @@ An RPi.GPIO wrapper that simplifies controlling CD4094 CMOS 8-bit latched shift 
 ```python
 import CD4094
 
-# setup pins
+# setup pins using BCM GPIO pin numbers
 STROBE = 17 # latch strobe GPIO pin
 DATA = 27 # data GPIO pin
 CLOCK = 22 # clock GPIO pin
