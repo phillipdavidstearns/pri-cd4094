@@ -1,14 +1,14 @@
-# handles input and output for heads-tails related projects
-# created to make abstract shiftregister sequential control logic
-# also abstracts the hardware based PWM functionality of pigpio
+# Abstracts RPi.GPIO functionality to control
+# 4094 shiftregister from the 4000 series CMOS logic family
+# on Raspberry Pi (tested on RPi 3 B+ and RPi Zero W)
+# Requires PRi.GPIO
 
 import RPi.GPIO as GPIO
 
 # This module must be initialized prior to use!
 # Example: `CD4094.init( [STROBE, DATA, CLOCK, ENABLE], CHANNELS )`
 
-# global variable for storing pin numbers
-
+# global variables for storing pin numbers
 STROBE=-1
 DATA=-1
 CLOCK=-1
@@ -21,6 +21,7 @@ def enable():
 def disable():
 	GPIO.output(ENABLE, 0)
 
+# Flushes the register by loading with zeros
 def clear():
 	GPIO.output(DATA, 0)
 	for c in range(CHANNELS):
@@ -29,12 +30,16 @@ def clear():
 	GPIO.output(STROBE, 1)
 	GPIO.output(STROBE, 0)
 
+# Intended to be run prior to program exit.
+# Disables output, flushes registers, and stops the GPIO instance
+# The module must be reinitialized before next use.
 def stop():
 	disable()
 	clear()
 	GPIO.cleanup()
 
-# takes a list of boolean values and outputs them
+# Accepts a list of boolean or binary values and shifts them
+# into the registers.
 def update(values):
 	for c in range(CHANNELS):
 		GPIO.output(DATA, values[CHANNELS - c - 1])
@@ -43,6 +48,8 @@ def update(values):
 	GPIO.output(STROBE, 1)
 	GPIO.output(STROBE, 0)
 
+# Must be run prior to use.
+# Sets up the GPIO module, clears the register, and enables output
 def init(pins, channels):
 
 	global STROBE
@@ -51,32 +58,38 @@ def init(pins, channels):
 	global ENABLE
 	global CHANNELS
 
-	GPIO.setwarnings(False)
-	GPIO.setmode(GPIO.BCM) # use GPIO pin numbers
-
-	# Setup register outputs
-	
+	# check input values for anomalies
 	if len(pins) == 4:
 		STROBE, DATA, CLOCK, ENABLE = pins
 	else:
-		print("Registers require 4 GPIO pins: strobe, data, clock, and enable")
+		print("[!] Initialization failed.")
+		print("[!] Registers require 4 GPIO pins: strobe, data, clock, and enable.")
 		return
 
 	if STROBE < 1 or STROBE > 40 or DATA < 1 or DATA > 40 or CLOCK < 1 or CLOCK > 40 or ENABLE < 1 or ENABLE > 40:
-		print("GPIO pins must be positive integers from 1-40")
+		print("[!] Initialization failed.")
+		print("[!] GPIO pins must be positive integers from 1-40.")
 		return
 
-	CHANNELS = channels
-
-	if CHANNELS is None:
-		print("Number of channels must be an integer")
+	if channels is None or type(channels) != int:
+		print("[!] Initialization failed.")
+		print("[!] Number of channels must be an integer")
 		return
-	elif CHANNELS <= 0:
-		print("Number of channels must be greater than 0")
+	elif channels <= 0:
+		print("[!] Initialization failed.")
+		print("[!] Number of channels must be greater than 0")
 		return
+	else:
+		CHANNELS = channels
+		
+	# Setup GPIO instance
+	GPIO.setwarnings(False)
+	GPIO.setmode(GPIO.BCM) # use BCM pin numbers
 
+	# Setup control pins
 	for pin in pins: 
 		GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
 
 	clear()
 	enable()
+	print("[+] Initialization succeeded.")
