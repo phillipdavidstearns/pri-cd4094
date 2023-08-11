@@ -1,7 +1,7 @@
 import setuptools
 
 __project__ = "CD4094"
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __description__ = "A module for controlling CD4094 shift registers with RPi.GPIO"
 __packages__ = ["CD4094", "RPi.GPIO"]
 
