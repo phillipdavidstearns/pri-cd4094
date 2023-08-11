@@ -1,4 +1,3 @@
-# handles input and output for heads-tails related projects
 # created to make abstract shiftregister sequential control logic
 # also abstracts the hardware based PWM functionality of pigpio
 
