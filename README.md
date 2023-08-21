@@ -1,6 +1,6 @@
 # rpi-cd4094
 
-An RPi.GPIO wrapper that simplifies controlling CD4094 CMOS 8-bit latched shift registers from a Raspberry Pi
+A class that simplifies controlling CD4094 CMOS 8-bit latched shift registers from a Raspberry Pi
 
 ## Installation
 
@@ -12,33 +12,47 @@ An RPi.GPIO wrapper that simplifies controlling CD4094 CMOS 8-bit latched shift 
 ## Usage
 
 ```python
-import CD4094
+#-----------------------------------------------------------------
+# import the CD4094 class
+from CD4094 import CD4094
 
-# setup pins using BCM GPIO pin numbers
+#-----------------------------------------------------------------
+# Quick initialization
+# start new controller for CD4094
+# defaults to a single chip w/ 8 output channels
+# uses default pins for controlling the chip
+
+controller = CD4094()
+
+#-----------------------------------------------------------------
+#Detailed initialization
+
+# setup pins using BCM GPIO pin numbers (values below are default)
 STROBE = 17 # latch strobe GPIO pin
 DATA = 27 # data GPIO pin
 CLOCK = 22 # clock GPIO pin
 ENABLE = 23 # enable GPIO pin
 
-#specify number of channels in the shift register chain
-CHANNELS = 32 # 
+#specify number of channels in the shift register chain (default 8)
+CHANNELS = 8 # 
 
 #bundle pins
 PINS = [STROBE, DATA, CLOCK, ENABLE]
 
-#initializes RPi.GPIO instance
-CD4094.init(PINS, CHANNELS)
+#initializes a new controller for CD4094
+controller = CD4094(pins=PINS, channels=CHANNELS)
 
 # toggle output
-CD4094.enable()
-CD4094.disable()
+controller.enable()
+controller.disable()
 
 # flush register
-CD4094.clear()
+controller.reset()
 
-# pre-exit RPi.GPIO cleanup
-CD4094.stop()
+# pre-exit cleanup. use before terminating parent application to flush output
+controller.stop()
 
-# shift data into register
-CD4094.update(list) # list of boolean values to output
+# load data into register
+data = [ 1, 0, 1, 0, 1, 0, 1, 0 ] #list of int values 0-1
+controller.update(data)
 ```

@@ -1,95 +1,69 @@
-# Abstracts RPi.GPIO functionality to control
-# 4094 shiftregister from the 4000 series CMOS logic family
-# on Raspberry Pi (tested on RPi 3 B+ and RPi Zero W)
-# Requires PRi.GPIO
+import pigpio
+import logging
 
-import RPi.GPIO as GPIO
+################################################################
+# CLASS DEFINITION: CD4094
 
-# This module must be initialized prior to use!
-# Example: `CD4094.init( [STROBE, DATA, CLOCK, ENABLE], CHANNELS )`
+class CD4094():
+  def __init__(self, pins=[17,27,22,23], channels=8):
+    logging.info('[CD4094] Initializing new CD4094 instance.')
+    logging.debug('[CD4094] Spinning up pigpio instance.')
+    self.pi = pigpio.pi()
+    self.pins = pins
 
-# global variables for storing pin numbers
-STROBE=-1
-DATA=-1
-CLOCK=-1
-ENABLE=-1
-CHANNELS=-1
+    if len(self.pins) == 4:
+      self.strobePin, self.dataPin, self.clockPin, self.enablePin = self.pins
+    else:
+      raise Exception('pins argument expects a list of 4 GPIO pins: strobe, data, clock, and enable.')
+    
+    if self.strobePin < 1 or self.strobePin > 40 or self.dataPin < 1 or self.dataPin > 40 or self.clockPin < 1 or self.clockPin > 40 or self.enablePin < 1 or self.enablePin > 40:
+      raise Exception('GPIO pins must be positive integers from 1-40.')
 
-def enable():
-	GPIO.output(ENABLE, 1)
+    if channels is None or type(channels) != int:
+      raise Exception('channels must be an integer')
+    elif channels <= 0:
+      raise Exception('channels must be greater than 0')
 
-def disable():
-	GPIO.output(ENABLE, 0)
+    self.channels = channels
 
-# Flushes the register by loading with zeros
-def clear():
-	GPIO.output(DATA, 0)
-	for c in range(CHANNELS):
-		GPIO.output(CLOCK, 1)
-		GPIO.output(CLOCK, 0)
-	GPIO.output(STROBE, 1)
-	GPIO.output(STROBE, 0)
+    #logging.debug('[CD4094] Initializing pins.')
+    for pin in self.pins:
+      self.pi.set_mode(pin, pigpio.OUTPUT)
+      self.pi.write(pin, 0)
+    self.reset()
+    self.enable()
 
-# Intended to be run prior to program exit.
-# Disables output, flushes registers, and stops the GPIO instance
-# The module must be reinitialized before next use.
-def stop():
-	disable()
-	clear()
-	GPIO.cleanup()
+  def enable(self):
+    #logging.debug('[CD4094] Enabling output.')
+    self.pi.write(self.enablePin, 1)
 
-# Accepts a list of boolean or binary values and shifts them
-# into the registers.
-def update(values):
-	for c in range(CHANNELS):
-		GPIO.output(DATA, values[CHANNELS - c - 1])
-		GPIO.output(CLOCK, 1)
-		GPIO.output(CLOCK, 0)
-	GPIO.output(STROBE, 1)
-	GPIO.output(STROBE, 0)
+  def disable(self):
+    #logging.debug('[CD4094] Disabling output.')
+    self.pi.write(self.enablePin, 0)
 
-# Must be run prior to use.
-# Sets up the GPIO module, clears the register, and enables output
-def init(pins, channels):
+  def reset(self):
+    #logging.debug('[CD4094] Resetting state.')
+    self.pi.write(self.dataPin, 0)
+    for i in range(self.channels):
+      self.pi.write(self.clockPin, 1)
+      self.pi.write(self.clockPin, 0)
+    self.pi.write(self.strobePin, 1)
+    self.pi.write(self.strobePin, 0)
 
-	global STROBE
-	global DATA
-	global CLOCK
-	global ENABLE
-	global CHANNELS
+  def update(self, data):
+    #logging.debug('[CD4094] Updating state: %s' % repr(data))
+    for i in range(self.channels):
+      try:
+        bit = data[self.channels - i - 1] & 0b1
+      except:
+        bit = 0
+      self.pi.write(self.dataPin, bit)
+      self.pi.write(self.clockPin, 1)
+      self.pi.write(self.clockPin, 0)
+    self.pi.write(self.strobePin, 1)
+    self.pi.write(self.strobePin, 0)
 
-	# check input values for anomalies
-	if len(pins) == 4:
-		STROBE, DATA, CLOCK, ENABLE = pins
-	else:
-		print("[!] Initialization failed.")
-		print("[!] Registers require 4 GPIO pins: strobe, data, clock, and enable.")
-		return
-
-	if STROBE < 1 or STROBE > 40 or DATA < 1 or DATA > 40 or CLOCK < 1 or CLOCK > 40 or ENABLE < 1 or ENABLE > 40:
-		print("[!] Initialization failed.")
-		print("[!] GPIO pins must be positive integers from 1-40.")
-		return
-
-	if channels is None or type(channels) != int:
-		print("[!] Initialization failed.")
-		print("[!] Number of channels must be an integer")
-		return
-	elif channels <= 0:
-		print("[!] Initialization failed.")
-		print("[!] Number of channels must be greater than 0")
-		return
-	else:
-		CHANNELS = channels
-		
-	# Setup GPIO instance
-	GPIO.setwarnings(False)
-	GPIO.setmode(GPIO.BCM) # use BCM pin numbers
-
-	# Setup control pins
-	for pin in pins: 
-		GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
-
-	clear()
-	enable()
-	print("[+] Initialization succeeded.")
+  def stop(self):
+    logging.info('[CD4094] Stopping.')
+    self.disable()
+    self.reset()

@@ -1,9 +1,9 @@
 import setuptools
 
 __project__ = "CD4094"
-__version__ = "0.0.3"
-__description__ = "A module for controlling CD4094 shift registers with RPi.GPIO"
-__packages__ = ["CD4094", "RPi.GPIO"]
+__version__ = "0.1.0"
+__description__ = "A module for controlling CD4094 shift registers with a Raspberry Pi using pigpio"
+__packages__ = [ "CD4094", "pigpio", "logging" ]
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -24,5 +24,5 @@ setuptools.setup(
         "Operating System :: POSIX :: Linux",
     ],
     python_requires='>=3.6',
-    install_requires=['RPi.GPIO'],
+    install_requires=['pigpio'],
 )
