@@ -4,10 +4,10 @@ A class that simplifies controlling CD4094 CMOS 8-bit latched shift registers fr
 
 ## Installation
 
-1. `$ sudo apt-get update; sudo apt-get install git`
+1. `$ sudo apt-get update; sudo apt-get install git python3-pip python3-pigpio pigpiod`
 1. `$ git clone https://github.com/phillipdavidstearns/rpi-cd4094.git`
 1. `$ cd rpi-cd4094`
-1. `$ sudo python3 setup.py install`
+1. `$ sudo python3 -m pip install -e ./`
 
 ## Usage
 
