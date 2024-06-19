@@ -15,13 +15,14 @@ class CD4094():
       self.strobePin, self.dataPin, self.clockPin, self.enablePin = self.pins
     else:
       raise Exception('pins argument expects a list of 4 GPIO pins: strobe, data, clock, and enable.')
-    
+
     if self.strobePin < 1 or self.strobePin > 40 or self.dataPin < 1 or self.dataPin > 40 or self.clockPin < 1 or self.clockPin > 40 or self.enablePin < 1 or self.enablePin > 40:
       raise Exception('GPIO pins must be positive integers from 1-40.')
 
     if channels is None or type(channels) != int:
       raise Exception('channels must be an integer')
-    elif channels <= 0:
+
+    if channels <= 0:
       raise Exception('channels must be greater than 0')
 
     self.channels = channels
@@ -50,11 +51,11 @@ class CD4094():
     self.pi.write(self.strobePin, 1)
     self.pi.write(self.strobePin, 0)
 
-  def update(self, data):
+  def update(self, data: int):
     #logging.debug('[CD4094] Updating state: %s' % repr(data))
     for i in range(self.channels):
       try:
-        bit = data[self.channels - i - 1] & 0b1
+        bit = data >> (self.channels -1 - i) & 0b1
       except:
         bit = 0
       self.pi.write(self.dataPin, bit)
