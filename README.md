@@ -34,13 +34,13 @@ CLOCK = 22 # clock GPIO pin
 ENABLE = 23 # enable GPIO pin
 
 #specify number of channels in the shift register chain (default 8)
-CHANNELS = 8 # 
+channels = 8 # 
 
 #bundle pins
-PINS = [STROBE, DATA, CLOCK, ENABLE]
+pins = [STROBE, DATA, CLOCK, ENABLE]
 
 #initializes a new controller for CD4094
-controller = CD4094(pins=PINS, channels=CHANNELS)
+controller = CD4094(pins=pins, channels=channels)
 
 # toggle output
 controller.enable()
@@ -53,6 +53,12 @@ controller.reset()
 controller.stop()
 
 # load data into register
-data = [ 1, 0, 1, 0, 1, 0, 1, 0 ] #list of int values 0-1
+pin_states = [ 1, 0, 1, 0, 1, 0, 1, 0 ] #list of int values 0-1
+
+data = 0
+
+for i in range(len(pin_states)):
+	data |= pin_states[i] << i
+
 controller.update(data)
 ```
